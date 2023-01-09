@@ -1,32 +1,27 @@
-function [Samples,Times]= Bipolar_referencing(cfg,channel)
+function [Samples,time]= Bipolar_referencing(cfg,channel)
 
 % channel sould be a number including 2 to 15.
 % for example channel 2 = 3-1.
 % scale of samples is in micro volt
 % scale of time is in second
 
+
+
 LFPname = [cfg.area 'LFP%u'];
 % Lfp of the second channel
-Filename = [sprintf(LFPname,channel+1) '.ncs'];
-NCSpath1 = fullfile(cfg.dataDir,Filename);
-NCS      = NLX_LoadNCS(NCSpath1,cfg.FieldOption,cfg.ExtractMode,[]);
-NC1      = NLX_convertNCS(NCS);
+Filename = fullfile([cfg.datasetdir cfg.Name], sprintf(LFPname,channel+1));
+load(Filename)
 
-[~,Samples1,~] = NLX_ExtractNCS(NC1,cfg.nevTime ,1);
+disp(['loading Channel  number: ' num2str(channel)])
+
+Samples1 = LFps;
 
 % Lfp of the first channel
-Filename = [sprintf(LFPname,channel-1) '.ncs'];
-NCSpath2 = fullfile(cfg.dataDir,Filename);
-NCS      = NLX_LoadNCS(NCSpath2,cfg.FieldOption,cfg.ExtractMode,[]);
-NC2      = NLX_convertNCS(NCS);
+Filename = fullfile([cfg.datasetdir cfg.Name], sprintf(LFPname,channel-1));
+load(Filename)
 
-[~,Samples2,Times] = NLX_ExtractNCS(NC2,cfg.nevTime,1);
-
+Samples2 = LFps;
 Samples = Samples1 - Samples2;
     
-Times = Times*10^-6;
+time = (1/cfg.Fs:1/cfg.Fs:length(Samples)/cfg.Fs)';
 
-% NCS = NLX_LoadNCS(NCSpath,NCSParam.FieldOption,NCSParam.ExtractMode,[]);
-% [NCS,Samples,Times] = NLX_ExtractNCS(NCS,NLXTime,1);
-% Times = Times*10^-6;      % convert time to sec
-    

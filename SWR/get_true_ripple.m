@@ -1,13 +1,11 @@
-function [ripples,pure_ripples] = get_true_ripple(cfg,LFPs,TimeVec,epochsTime,AllRipples)
+function pure_ripples = get_true_ripple(cfg,LFPs,TimeVec,AllRipples)
 
-% Excludes false rippled detected by FindRipples function
-% First and second column of TrialTimes is start and end time of desired interval respectively.
-% for inter-trial TrialTimes is NLX_TRIAL_START and NLX_TRIAL_END
+% Excludes false ripples detected by FindRipples function
+
 
     LFPs = diff(LFPs,1); 
-    
-    ripples     = CheckEpoch(AllRipples,epochsTime); 
-    X           = ripples; 
+
+    X           = AllRipples; 
     RplsTimes   = X(all(X,2),:);
     nBins       = round(cfg.win*cfg.Fs);
     
@@ -27,37 +25,19 @@ function [ripples,pure_ripples] = get_true_ripple(cfg,LFPs,TimeVec,epochsTime,Al
         nOfpeaks(ii,:)      = findRipplespots(zSpec,freq,cfg.Freq_threshold); 
     end
 
-    rpl2delete = RplsTimes(any(nOfpeaks>cfg.nOfspot,2),:);
-
-    if isempty(rpl2delete), pure_ripples = X; 
-                
+    idxr = find(~any(nOfpeaks>cfg.nOfspot,2));
+    
+    if isempty(idxr)
+        pure_ripples = X; 
+           
     else
-        for spoti = 1:size(rpl2delete,1)
-            X(rpl2delete(spoti,end),:) = 0;
-        end
-        pure_ripples = X;
-    end
-  
-end
-
-
-
-function pure_ripples = CheckEpoch(ripplesTimes,epochsTime)
-    
-    [~,cols]  = size(ripplesTimes);
-    
-    pure_ripples = zeros(size(epochsTime,1),cols+1);
-   for k = 1:size(ripplesTimes,1)
-
-        for iTrial = 1:size(epochsTime,1)
-
-            if (ripplesTimes(k,2) >= epochsTime(iTrial,1) && ripplesTimes(k,2) < epochsTime(iTrial,2)) 
-                pure_ripples(iTrial,1:4) =  ripplesTimes(k,:);
-                pure_ripples(iTrial,5)   = iTrial;
-            end
-        end
+        
+        pure_ripples = X(idxr,:); % ripple times
+ 
     end
 end
+
+
 
 
 function nOfFlags = findRipplespots(image,freq,Freq_threshold)

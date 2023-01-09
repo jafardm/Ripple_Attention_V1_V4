@@ -53,7 +53,7 @@ for peni = 1:length(pen)
         
         [Samples,Times]          = Bipolar_referencing(cfg,iChan);
         [XR,~]                   = ripple_detction(cfg,Samples,Times);
-       [correctripples,rplLFP] = get_true_ripple(cfg,Samples,Times,XR);
+       correctripples = get_true_ripple(cfg,Samples,Times,XR);
      
         if isempty(correctripples), continue; end
          
